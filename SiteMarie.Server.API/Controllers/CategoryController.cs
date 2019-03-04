@@ -1,5 +1,6 @@
 using System;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using SiteMarie.Server.API.Client.Database;
 using SiteMarie.Server.API.Client.Interfaces;
 
@@ -30,13 +31,27 @@ namespace SiteMarie.Server.API.Controllers
             var picture = Repository.GetById(categoryId);
             return Ok(picture);
         }
+
+        [HttpGet]
+        [Route("file/{categoryId}")]
+        public IActionResult GetCategoryFile(Guid categoryId)
+        {
+            var res = Repository.GetCategoryFile(categoryId);
+
+            return Ok(res);
+        }
         #endregion        
         #region POST
-        [HttpPost]
-        public IActionResult Add([FromBody] Category c) 
+        [HttpPost, DisableRequestSizeLimit]
+        public IActionResult Add() 
         {
-            var category = Repository.Add(c);
-            return Ok(category);    
+            var files = Request.Form.Files;
+            var file = files[0];
+            
+            var category = JsonConvert.DeserializeObject<Category>(Request.Form["category"]);
+            category.File = file;
+            var c = Repository.Add(category);
+            return Ok(c);    
         }
 
         [HttpPost]
@@ -50,10 +65,15 @@ namespace SiteMarie.Server.API.Controllers
         #endregion
         #region PUT
         [HttpPut]
-        public IActionResult UpdateCategory(Category category)
+        public IActionResult UpdateCategory()
         {
-            var cat = Repository.Update(category);
-            return Ok(cat);
+            var files = Request.Form.Files;
+            var file = files[0];
+            
+            var category = JsonConvert.DeserializeObject<Category>(Request.Form["category"]);
+            category.File = file;
+            var c = Repository.Update(category);
+            return Ok(c);
         }
         #endregion
     }

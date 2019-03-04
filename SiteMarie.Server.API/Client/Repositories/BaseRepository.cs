@@ -58,7 +58,7 @@ namespace SiteMarie.Server.API.Client.Repositories
             }
         }
 
-        public T Update(T entity)
+        public virtual T Update(T entity)
         {
             using (var connection = ConnectionFactory.Open())
             {
