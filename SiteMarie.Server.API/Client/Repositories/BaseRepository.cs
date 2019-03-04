@@ -50,11 +50,11 @@ namespace SiteMarie.Server.API.Client.Repositories
             }
         }
 
-        public virtual void Remove(Guid id)
+        public virtual void Remove(T entity)
         {
             using (var connection = ConnectionFactory.Open())
             {
-                connection.DeleteById<T>(id);
+                connection.DeleteById<T>(entity.Id);
             }
         }
 

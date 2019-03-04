@@ -73,10 +73,10 @@ namespace SiteMarie.Server.API.Controllers
 
         [HttpPost]
         [Route("delete")]
-        public IActionResult DeletePicture([FromBody]Guid id)
+        public IActionResult DeletePicture([FromBody]Picture picture)
         {
-            Repository.Remove(id);
-            return Ok();
+            Repository.Remove(picture);
+            return Ok(picture);
         }
 
         #endregion

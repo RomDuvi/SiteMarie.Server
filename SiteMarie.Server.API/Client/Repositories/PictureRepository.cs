@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Drawing.Drawing2D;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Configuration;
-using PhotoSauce.MagicScaler;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
 using SiteMarie.Server.API.Client.Database;
@@ -25,6 +25,7 @@ namespace SiteMarie.Server.API.Client.Repositories
             _configuration = configuration;
         }
         
+        #region ADD
         public override Picture Add(Picture picture)
         {
             picture.Id = Guid.NewGuid();
@@ -61,15 +62,28 @@ namespace SiteMarie.Server.API.Client.Repositories
             var photoByte = picture.File;
             var path = Regex.Replace(picture.Path, @"(\.[\w\d_-]+)$", "_thumb$1");
 
+            
             using(var inStream = new MemoryStream())
             using(var outStream = File.Create(path))
             {
                 picture.File.CopyTo(inStream);
                 var img = Image.FromStream(inStream);
+                var nWidth = img.Width/4;
+                var nHeight = img.Height/4;
+                
                 inStream.Position = 0;
                 //Resize
-                var settings = new ProcessImageSettings{ Width = img.Width/4 };
-                MagicImageProcessor.ProcessImage(inStream, outStream, settings);
+                using (Image dest = new Bitmap(nWidth, nHeight))
+                {
+                    Graphics graphic = Graphics.FromImage(dest);
+                    graphic.InterpolationMode = InterpolationMode.HighQualityBicubic;  
+                    graphic.SmoothingMode = SmoothingMode.HighQuality;  
+                    graphic.PixelOffsetMode = PixelOffsetMode.HighQuality;  
+                    graphic.CompositingQuality = CompositingQuality.HighQuality;
+                    graphic.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                    graphic.DrawImage(img, 0, 0, nWidth, nHeight);
+                    dest.Save(outStream, ImageFormat.Png);
+                }
             }
             ApplyWatermark("RizDeLHuile", path);
             return path;
@@ -86,7 +100,7 @@ namespace SiteMarie.Server.API.Client.Repositories
                     {
                         grp.DrawImage(bitmap,0,0);
                         bitmap.Dispose();
-                        Brush brush = new SolidBrush(Color.FromArgb(150, 255, 255, 255));
+                        Brush brush = new SolidBrush(Color.FromArgb(175, 255, 255, 255));
                         Font font = new System.Drawing.Font("Segoe UI", 50, FontStyle.Bold, GraphicsUnit.Pixel);
                         SizeF textSize = grp.MeasureString(watermarkText, font);
                         Point position = new Point(((int)textSize.Width/2)+10 , 
@@ -97,6 +111,8 @@ namespace SiteMarie.Server.API.Client.Repositories
                 }
             }
         }
+        #endregion
+
         public byte[] GetPictureFile(Guid pictureId)
         {
             var picture = GetById(pictureId);
@@ -107,15 +123,16 @@ namespace SiteMarie.Server.API.Client.Repositories
             return File.ReadAllBytes(picture.ThumbPath);
         }
 
-        public override void Remove(Guid id)
+        public override void Remove(Picture p)
         {
-            var picture = GetById(id);
+            var picture = GetById(p.Id);
             if(picture == null)
             {
                 throw new ArgumentException("Can't find picture");
             }
             using (var connection = ConnectionFactory.Open())
             {
+                connection.DeleteByIds<PictureCategory>(picture.PictureCategories.Select(x => x.Id));
                 connection.DeleteById<Picture>(picture.Id);
                 File.Delete(picture.ThumbPath);
                 File.Delete(picture.Path);
@@ -134,9 +151,20 @@ namespace SiteMarie.Server.API.Client.Repositories
             using(var outStream = new MemoryStream())
             using (var img = Image.FromStream(inStream))
             {
+                var nWidth = img.Width * (1/ratio);
+                var nHeight = img.Height * (1/ratio);
                 //Resize
-                var settings = new ProcessImageSettings{ Width = img.Width * (1/ratio) , Height = img.Height * (1/ratio) };
-                MagicImageProcessor.ProcessImage(inStream, outStream, settings);
+                using (Image dest = new Bitmap(nWidth, nHeight))
+                {
+                    Graphics graphic = Graphics.FromImage(dest);
+                    graphic.InterpolationMode = InterpolationMode.HighQualityBicubic;  
+                    graphic.SmoothingMode = SmoothingMode.HighQuality;  
+                    graphic.PixelOffsetMode = PixelOffsetMode.HighQuality;  
+                    graphic.CompositingQuality = CompositingQuality.HighQuality;
+                    graphic.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                    graphic.DrawImage(img, 0, 0, nWidth, nHeight);
+                    dest.Save(outStream, ImageFormat.Png);
+                }
                 return outStream.GetBuffer();
             }
         }

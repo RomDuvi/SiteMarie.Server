@@ -9,7 +9,7 @@ namespace SiteMarie.Server.API.Client.Interfaces
         T GetById(Guid id);
         IEnumerable<T> GetAll();
         T Add(T entity);
-        void Remove(Guid id);
+        void Remove(T entity);
         T Update(T entity);    
     }
 }

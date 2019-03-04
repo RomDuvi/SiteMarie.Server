@@ -6,7 +6,7 @@ using ServiceStack.DataAnnotations;
 
 namespace SiteMarie.Server.API.Client.Database
 {
-    [Alias("Pictures")]
+    [Alias("pictures")]
     public class Picture : BaseModel
     {
         public string DisplayName { get; set; }

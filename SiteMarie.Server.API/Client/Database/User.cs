@@ -2,7 +2,7 @@ using ServiceStack.DataAnnotations;
 
 namespace SiteMarie.Server.API.Client.Database
 {
-    [Alias("Users")]
+    [Alias("users")]
     public class User : BaseModel
     {
         public string Username { get; set; }

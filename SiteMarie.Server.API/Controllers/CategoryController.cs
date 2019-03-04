@@ -41,10 +41,10 @@ namespace SiteMarie.Server.API.Controllers
 
         [HttpPost]
         [Route("delete")]
-        public IActionResult Delete([FromBody] Guid id)
+        public IActionResult Delete([FromBody] Category category)
         {
-            Repository.Remove(id);
-            return Ok();
+            Repository.Remove(category);
+            return Ok(category);
         }
         
         #endregion

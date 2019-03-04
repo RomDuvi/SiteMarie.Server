@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using System.Collections.Generic;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
@@ -10,6 +12,22 @@ namespace SiteMarie.Server.API.Client.Repositories
     {
         public CategoryRepository(IDbConnectionFactory connectionFactory) : base(connectionFactory)
         {
+        }
+        public override void Remove(Category c)
+        {
+            var category = GetById(c.Id);
+            if(category == null)
+            {
+                throw new ArgumentException("Can't find category to delete");
+            }
+            if(category.PictureCategories.Any())
+            {
+                throw new InvalidOperationException("Can't delete category beacause they are pictures in it!");
+            }
+            using (var connection = ConnectionFactory.Open())
+            {
+                connection.DeleteById<Category>(category.Id);
+            }
         }      
     }
 }

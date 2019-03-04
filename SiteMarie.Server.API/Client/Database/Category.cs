@@ -3,7 +3,7 @@ using ServiceStack.DataAnnotations;
 
 namespace SiteMarie.Server.API.Client.Database
 {
-    [Alias("Categories")]
+    [Alias("categories")]
     public class Category : BaseModel
     {
         public string Name { get; set; }
