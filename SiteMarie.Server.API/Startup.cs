@@ -53,6 +53,7 @@ namespace SiteMarie.Server.API
             services.AddSingleton<IPictureRepository, PictureRepository>();
             services.AddSingleton<ICategoryRepository, CategoryRepository>();
             services.AddSingleton<IUserRepository, UserRepository>();
+            services.AddSingleton<ICommandRepository, CommandRepository>();
             
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
             services.Configure<FormOptions>(x => {
